@@ -1,0 +1,965 @@
+openapi: 3.0.3
+info:
+  description: "Welcome to the hullo API.  \n\nWith this API you can perform operations\
+    \ on your hullo account programmatically that you can call using the hullo\nconsole.\
+    \ The operations currently available include:  \n\n* Add / Update a member\n*\
+    \ Get the details of a member\n* Get the messages sent / received from a member\n\
+    * Send a message to a member\n\nThe hullo API is an easy to use RESTful API that\
+    \ can be called by any modern programming language that \nsupports HTTP calls,\
+    \ and also has out of the box support for several programming languages including:\
+    \  \n* Java\n* Javascript  \n\nIn order to use the API you will first need to\
+    \ generate an API key using the hullo console application, assigning\nit the the\
+    \ relevant scopes required for the operations you wish to call.\n"
+  title: Always On Mobile - hullo API
+  version: 1.0.0
+servers:
+- description: Production server
+  url: https://app.hullo.me/api
+paths:
+  /endpoints/account:
+    get:
+      description: |-
+        Allows the caller to get information about the account being used to access the API.
+        Currently this allows access to the name given when creating the API key in the hullo application.
+        This can be useful for allowing a client application to verify the key being used.
+      operationId: getAccount
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: UNAUTHORIZED
+      security:
+      - ApiKeyAuth: []
+      summary: Get details about the account
+      tags:
+      - Account
+      x-accepts: application/json
+      x-tags:
+      - tag: Account
+      x-code-samples:
+      - lang: cURL
+        label: CLI
+        source: |-
+          curl -X GET \
+          -H "X-API-KEY: [[apiKey]]" \
+          -H "Accept: application/json" \
+          "http://localhost:8030/api/endpoints/account"
+      - lang: Java
+        label: Java
+        source: |-
+          import org.openapitools.client.*;
+          import org.openapitools.client.auth.*;
+          import org.openapitools.client.model.*;
+          import org.openapitools.client.api.AccountApi;
+
+          import java.io.File;
+          import java.util.*;
+
+          public class AccountApiExample {
+              public static void main(String[] args) {
+                  ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+                  // Configure API key authorization: ApiKeyAuth
+                  ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+                  ApiKeyAuth.setApiKey("YOUR API KEY");
+
+                  // Create an instance of the API class
+                  AccountApi apiInstance = new AccountApi();
+
+                  try {
+                      Account result = apiInstance.getAccount();
+                      System.out.println(result);
+                  } catch (ApiException e) {
+                      System.err.println("Exception when calling AccountApi#getAccount");
+                      e.printStackTrace();
+                  }
+              }
+          }
+      - lang: JavaScript
+        label: JavaScript
+        source: |-
+          var AlwaysOnMobileHulloApi = require('always_on_mobile_hullo_api');
+          var defaultClient = AlwaysOnMobileHulloApi.ApiClient.instance;
+
+          // Configure API key authorization: ApiKeyAuth
+          var ApiKeyAuth = defaultClient.authentications['ApiKeyAuth'];
+          ApiKeyAuth.apiKey = "YOUR API KEY";
+
+          // Create an instance of the API class
+          var api = new AlwaysOnMobileHulloApi.AccountApi()
+          var callback = function(error, data, response) {
+            if (error) {
+              console.error(error);
+            } else {
+              console.log('API called successfully. Returned data: ' + data);
+            }
+          };
+          api.getAccount(callback);
+    summary: Operations for the account accessing the API
+  /endpoints/messages:
+    post:
+      description: |
+        Allows messages to be sent to members. Members must be fully opted-in in order to be sent a message, otherwise
+        this operation will reject the call. If a message is longer than 160 characters - using the GSM character set
+        (https://en.wikipedia.org/wiki/GSM_03.38) - then the message will be split into multiple 140 character parts.
+
+        If any characters fall outside of the supported GSM character set then the message will be converted to UTF-16
+        (https://en.wikipedia.org/wiki/UTF-16) and split into multiple 70 character parts. The parts will be
+        reconstructed and displayed to the member as a single message on their handset.
+      operationId: createMessage
+      requestBody:
+        $ref: '#/components/requestBodies/MessageBody'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: BAD_REQUEST
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: UNAUTHORIZED
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: NOT_FOUND
+      security:
+      - ApiKeyAuth: []
+      summary: Send a message
+      tags:
+      - Messages
+      x-content-type: application/json
+      x-accepts: application/json
+      x-tags:
+      - tag: Messages
+      x-code-samples:
+      - lang: cURL
+        label: CLI
+        source: |-
+          curl -X POST \
+          -H "X-API-KEY: [[apiKey]]" \
+          -H "Accept: application/json" \
+          -H "Content-Type: application/json" \
+             "http://localhost:8030/api/endpoints/messages" \
+          -d '{
+              "messageText" : "messageText",
+               "phoneNumber" : "phoneNumber",
+               "inbound" : true,
+               "fullName" : "fullName",
+               "id" : "id",
+               "issueDate" : "2000-01-23T04:56:07.000+00:00"
+             }'
+      - lang: Java
+        label: Java
+        source: "import org.openapitools.client.*;\nimport org.openapitools.client.auth.*;\n\
+          import org.openapitools.client.model.*;\nimport org.openapitools.client.api.MessagesApi;\n\
+          \nimport java.io.File;\nimport java.util.*;\n\npublic class MessagesApiExample\
+          \ {\n    public static void main(String[] args) {\n    ApiClient defaultClient\
+          \ = Configuration.getDefaultApiClient();\n\n    // Configure API key authorization:\
+          \ ApiKeyAuth\n    ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication(\"\
+          ApiKeyAuth\");\n    ApiKeyAuth.setApiKey(\"YOUR API KEY\");\n    // Uncomment\
+          \ the following line to set a prefix for the API key, e.g. \"Token\" (defaults\
+          \ to null)\n    //ApiKeyAuth.setApiKeyPrefix(\"Token\");\n    \n    // Create\
+          \ an instance of the API class\n    MessagesApi apiInstance = new MessagesApi();\n\
+          \    Message message = {\"phoneNumber\":\"447700912345\",\"messageText\"\
+          :\"Hi, don't forget your appointment on Thursday at 11:00\"}; // Message\
+          \ |\n    \n    try {\n      Message result = apiInstance.createMessage(message);\n\
+          \      System.out.println(result);\n    } catch (ApiException e) {\n   \
+          \   System.err.println(\"Exception when calling MessagesApi#createMessage\"\
+          );\n      e.printStackTrace();\n    }\n  }\n}"
+      - lang: JavaScript
+        label: JavaScript
+        source: |-
+          var AlwaysOnMobileHulloApi = require('always_on_mobile_hullo_api');
+          var defaultClient = AlwaysOnMobileHulloApi.ApiClient.instance;
+
+          // Configure API key authorization: ApiKeyAuth
+          var ApiKeyAuth = defaultClient.authentications['ApiKeyAuth'];
+          ApiKeyAuth.apiKey = "YOUR API KEY";
+
+          // Create an instance of the API class
+          var api = new AlwaysOnMobileHulloApi.MessagesApi()
+          var message = {"phoneNumber":"447700912345","messageText":"Hi, don't forget your appointment on Thursday at 11:00"}; // {Message}
+
+            var callback = function(error, data, response) {
+            if (error) {
+              console.error(error);
+            } else {
+              console.log('API called successfully. Returned data: ' + data);
+            }
+          };
+          api.createMessage(message, callback);
+    summary: Operations for sending and retrieving messages to / from members
+  /endpoints/messages/{phoneNumber}:
+    get:
+      description: "Retrieves any messages sent / received for a specific subscriber.\
+        \ The messages will be ordered by date \ndescending, so the newest messages\
+        \ will appear at the top."
+      operationId: getMessages
+      parameters:
+      - description: The phone number of the member
+        explode: false
+        in: path
+        name: phoneNumber
+        required: true
+        schema:
+          maxLength: 15
+          minLength: 1
+          type: string
+        style: simple
+      - explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 50
+          minimum: 1
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Messages'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: UNAUTHORIZED
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: NOT_FOUND
+      security:
+      - ApiKeyAuth: []
+      summary: Gets the messages for a specific subscriber
+      tags:
+      - Messages
+      x-accepts: application/json
+      x-tags:
+      - tag: Messages
+      x-code-samples:
+      - lang: cURL
+        label: CLI
+        source: |-
+          curl -X GET \
+          -H "X-API-KEY: [[apiKey]]" \
+          -H "Accept: application/json" \
+                         "http://localhost:8030/api/endpoints/messages/{phoneNumber}?limit=56"
+      - lang: Java
+        label: Java
+        source: "import org.openapitools.client.*;\nimport org.openapitools.client.auth.*;\n\
+          import org.openapitools.client.model.*;\nimport org.openapitools.client.api.MessagesApi;\n\
+          \nimport java.io.File;\nimport java.util.*;\n\npublic class MessagesApiExample\
+          \ {\n    public static void main(String[] args) {\n        ApiClient defaultClient\
+          \ = Configuration.getDefaultApiClient();\n\n        // Configure API key\
+          \ authorization: ApiKeyAuth\n        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth)\
+          \ defaultClient.getAuthentication(\"ApiKeyAuth\");\n        ApiKeyAuth.setApiKey(\"\
+          YOUR API KEY\");                    \n\n        // Create an instance of\
+          \ the API class\n        MessagesApi apiInstance = new MessagesApi();\n\
+          \        String phoneNumber = phoneNumber_example; // String | The phone\
+          \ number of the member\n        Integer limit = 56; // Integer | \n\n  \
+          \      try {\n            array[Message] result = apiInstance.getMessages(phoneNumber,\
+          \ limit);\n            System.out.println(result);\n        } catch (ApiException\
+          \ e) {\n            System.err.println(\"Exception when calling MessagesApi#getMessages\"\
+          );\n            e.printStackTrace();\n        }\n    }\n}"
+      - lang: JavaScript
+        label: JavaScript
+        source: "var AlwaysOnMobileHulloApi = require('always_on_mobile_hullo_api');\n\
+          var defaultClient = AlwaysOnMobileHulloApi.ApiClient.instance;\n\n// Configure\
+          \ API key authorization: ApiKeyAuth\nvar ApiKeyAuth = defaultClient.authentications['ApiKeyAuth'];\n\
+          ApiKeyAuth.apiKey = \"YOUR API KEY\";\n// Uncomment the following line to\
+          \ set a prefix for the API key, e.g. \"Token\" (defaults to null)\n//ApiKeyAuth.apiKeyPrefix['X-API-KEY']\
+          \ = \"Token\";\n\n// Create an instance of the API class\nvar api = new\
+          \ AlwaysOnMobileHulloApi.MessagesApi()\nvar phoneNumber = phoneNumber_example;\
+          \ // {String} The phone number of the member\nvar opts = {\n  'limit': 56\
+          \ // {Integer} \n};\n\nvar callback = function(error, data, response) {\n\
+          \  if (error) {\n    console.error(error);\n  } else {\n    console.log('API\
+          \ called successfully. Returned data: ' + data);\n  }\n};\napi.getMessages(phoneNumber,\
+          \ opts, callback);"
+    summary: Operations for retrieving messages sent / received from members
+  /endpoints/members:
+    post:
+      description: "Add or update the information hullo stores for a specific member.\
+        \ If the member doesn't already exist then   \nthey will be added to the members\
+        \ store and an opt-in message will be sent to the number specified in order\
+        \  \nto get confirmation that the number exists and wishes to receive messages.\
+        \ If the member responds with a  \nconfirmation message (\"yes\") then their\
+        \ member record will be updated to opted-in and they will then be able  \n\
+        to receive messages sent to them from any hullo campaign. If the member already\
+        \ exists then their record will \nbe updated to reflect any new / updated\
+        \ attribute data included in the call. If an attribute is specified but  \n\
+        no value is given or the value is null then that attribute will be deleted\
+        \ from the members record.\n"
+      operationId: upsertMember
+      requestBody:
+        $ref: '#/components/requestBodies/MemberBody'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: BAD_REQUEST
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: UNAUTHORIZED
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: NOT_FOUND
+      security:
+      - ApiKeyAuth: []
+      summary: Adds or updates a member
+      tags:
+      - Members
+      x-content-type: application/json
+      x-accepts: application/json
+      x-tags:
+      - tag: Members
+      x-code-samples:
+      - lang: cURL
+        label: CLI
+        source: |-
+          curl -X POST \
+          -H "X-API-KEY: [[apiKey]]" \
+           -H "Accept: application/json" \
+           -H "Content-Type: application/json" \
+           "http://localhost:8030/api/endpoints/members" \
+           -d '{
+            "phoneNumber" : "phoneNumber",
+            "registrationDate" : "2000-01-23T04:56:07.000+00:00",
+            "fullName" : "fullName",
+            "groups" : [ "groups", "groups" ],
+            "attributes" : {
+              "key" : [ "attributes", "attributes" ]
+            }
+          }'
+      - lang: Java
+        label: Java
+        source: "import org.openapitools.client.*;\nimport org.openapitools.client.auth.*;\n\
+          import org.openapitools.client.model.*;\nimport org.openapitools.client.api.MembersApi;\n\
+          \nimport java.io.File;\nimport java.util.*;\n\npublic class MembersApiExample\
+          \ {\n    public static void main(String[] args) {\n        ApiClient defaultClient\
+          \ = Configuration.getDefaultApiClient();\n\n        // Configure API key\
+          \ authorization: ApiKeyAuth\n        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth)\
+          \ defaultClient.getAuthentication(\"ApiKeyAuth\");\n        ApiKeyAuth.setApiKey(\"\
+          YOUR API KEY\");\n\n        // Create an instance of the API class\n   \
+          \     MembersApi apiInstance = new MembersApi();\n        Member member\
+          \ = {\"phoneNumber\":\"447700912345\",\"fullName\":\"Brian Smith\",\"attributes\"\
+          :{\"Location\":[\"London\"],\"Clinic Attended\":[\"Chelsea\"]}}; // Member\
+          \ | \n\n        try {\n            Member result = apiInstance.upsertMember(member);\n\
+          \            System.out.println(result);\n        } catch (ApiException\
+          \ e) {\n            System.err.println(\"Exception when calling MembersApi#upsertMember\"\
+          );\n            e.printStackTrace();\n        }\n    }\n}"
+      - lang: JavaScript
+        label: JavaScript
+        source: "var AlwaysOnMobileHulloApi = require('always_on_mobile_hullo_api');\n\
+          var defaultClient = AlwaysOnMobileHulloApi.ApiClient.instance;\n\n// Configure\
+          \ API key authorization: ApiKeyAuth\nvar ApiKeyAuth = defaultClient.authentications['ApiKeyAuth'];\n\
+          ApiKeyAuth.apiKey = \"YOUR API KEY\";\n\n// Create an instance of the API\
+          \ class\nvar api = new AlwaysOnMobileHulloApi.MembersApi()\nvar member =\
+          \ {\"phoneNumber\":\"447700912345\",\"fullName\":\"Brian Smith\",\"attributes\"\
+          :{\"Location\":[\"London\"],\"Clinic Attended\":[\"Chelsea\"]}}; // {Member}\
+          \ \n\nvar callback = function(error, data, response) {\n  if (error) {\n\
+          \    console.error(error);\n  } else {\n    console.log('API called successfully.\
+          \ Returned data: ' + data);\n  }\n};\napi.upsertMember(member, callback);"
+    summary: Operations for administering members
+  /endpoints/members/{phoneNumber}:
+    get:
+      description: "Retrieves the details hullo stores about a specific member. The\
+        \ record will contain any attribute data added \nusing either the hullo API\
+        \ or the hullo application along with the members phone number and full name.\n"
+      operationId: getMember
+      parameters:
+      - description: The phone number of the subscriber
+        explode: false
+        in: path
+        name: phoneNumber
+        required: true
+        schema:
+          maxLength: 15
+          minLength: 1
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: BAD_REQUEST
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: UNAUTHORIZED
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: NOT_FOUND
+      security:
+      - ApiKeyAuth: []
+      summary: Gets the details for a member
+      tags:
+      - Members
+      x-accepts: application/json
+      x-tags:
+      - tag: Members
+      x-code-samples:
+      - lang: cURL
+        label: CLI
+        source: |-
+          curl -X GET \
+          -H "X-API-KEY: [[apiKey]]" \
+           -H "Accept: application/json" \
+           "http://localhost:8030/api/endpoints/members/{phoneNumber}"
+      - lang: Java
+        label: Java
+        source: |-
+          import org.openapitools.client.*;
+          import org.openapitools.client.auth.*;
+          import org.openapitools.client.model.*;
+          import org.openapitools.client.api.MembersApi;
+
+          import java.io.File;
+          import java.util.*;
+
+          public class MembersApiExample {
+              public static void main(String[] args) {
+                  ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+                  // Configure API key authorization: ApiKeyAuth
+                  ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+                  ApiKeyAuth.setApiKey("YOUR API KEY");
+                  // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+                  //ApiKeyAuth.setApiKeyPrefix("Token");
+
+                  // Create an instance of the API class
+                  MembersApi apiInstance = new MembersApi();
+                  String phoneNumber = phoneNumber_example; // String | The phone number of the subscriber
+
+                  try {
+                      Member result = apiInstance.getMember(phoneNumber);
+                      System.out.println(result);
+                  } catch (ApiException e) {
+                      System.err.println("Exception when calling MembersApi#getMember");
+                      e.printStackTrace();
+                  }
+              }
+          }
+      - lang: JavaScript
+        label: JavaScript
+        source: |-
+          var AlwaysOnMobileHulloApi = require('always_on_mobile_hullo_api');
+          var defaultClient = AlwaysOnMobileHulloApi.ApiClient.instance;
+
+          // Configure API key authorization: ApiKeyAuth
+          var ApiKeyAuth = defaultClient.authentications['ApiKeyAuth'];
+          ApiKeyAuth.apiKey = "YOUR API KEY";
+          // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+          //ApiKeyAuth.apiKeyPrefix['X-API-KEY'] = "Token";
+
+          // Create an instance of the API class
+          var api = new AlwaysOnMobileHulloApi.MembersApi()
+          var phoneNumber = phoneNumber_example; // {String} The phone number of the subscriber
+
+          var callback = function(error, data, response) {
+            if (error) {
+              console.error(error);
+            } else {
+              console.log('API called successfully. Returned data: ' + data);
+            }
+          };
+          api.getMember(phoneNumber, callback);
+    summary: Operations for administering a specific member
+  /endpoints/members/{phoneNumber}/optout:
+    post:
+      description: "Opts out the member from the hullo member store which results\
+        \ in their record being deleted. Any pending \nmessages will also be deleted\
+        \ for the member and the member will no longer be able to participate in \\\
+        \ any \ncampaigns.\n"
+      operationId: optOutMember
+      parameters:
+      - description: The phone number of the subscriber
+        explode: false
+        in: path
+        name: phoneNumber
+        required: true
+        schema:
+          maxLength: 15
+          minLength: 1
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: BAD_REQUEST
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: UNAUTHORIZED
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: NOT_FOUND
+      security:
+      - ApiKeyAuth: []
+      summary: Opts the member out from the hullo member store
+      tags:
+      - Members
+      x-accepts: application/json
+      x-tags:
+      - tag: Members
+      x-code-samples:
+      - lang: cURL
+        label: CLI
+        source: |-
+          curl -X POST \
+          -H "X-API-KEY: [[apiKey]]" \
+           -H "Accept: application/json" \
+           "http://localhost:8030/api/endpoints/members/{phoneNumber}/optout"
+      - lang: Java
+        label: Java
+        source: |-
+          import org.openapitools.client.*;
+          import org.openapitools.client.auth.*;
+          import org.openapitools.client.model.*;
+          import org.openapitools.client.api.MembersApi;
+
+          import java.io.File;
+          import java.util.*;
+
+          public class MembersApiExample {
+              public static void main(String[] args) {
+                  ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+                  // Configure API key authorization: ApiKeyAuth
+                  ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+                  ApiKeyAuth.setApiKey("YOUR API KEY");
+
+                  // Create an instance of the API class
+                  MembersApi apiInstance = new MembersApi();
+                  String phoneNumber = phoneNumber_example; // String | The phone number of the subscriber
+
+                  try {
+                      apiInstance.optOutMember(phoneNumber);
+                  } catch (ApiException e) {
+                      System.err.println("Exception when calling MembersApi#optOutMember");
+                      e.printStackTrace();
+                  }
+              }
+          }
+      - lang: JavaScript
+        label: JavaScript
+        source: |-
+          var AlwaysOnMobileHulloApi = require('always_on_mobile_hullo_api');
+          var defaultClient = AlwaysOnMobileHulloApi.ApiClient.instance;
+
+          // Configure API key authorization: ApiKeyAuth
+          var ApiKeyAuth = defaultClient.authentications['ApiKeyAuth'];
+          ApiKeyAuth.apiKey = "YOUR API KEY";
+
+          // Create an instance of the API class
+          var api = new AlwaysOnMobileHulloApi.MembersApi()
+          var phoneNumber = phoneNumber_example; // {String} The phone number of the subscriber
+
+          var callback = function(error, data, response) {
+            if (error) {
+              console.error(error);
+            } else {
+              console.log('API called successfully.');
+            }
+          };
+          api.optOutMember(phoneNumber, callback);
+    summary: Operations for administering the opt out status of a member
+  /endpoints/attributes:
+    get:
+      description: |-
+        Retrieves the list of attributes configured against a hullo account. Any configured
+        attributes can be added to a member record.
+      operationId: getAttributes
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attributes'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: BAD_REQUEST
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+          description: UNAUTHORIZED
+      security:
+      - ApiKeyAuth: []
+      summary: Gets the list of attributes
+      tags:
+      - Attributes
+      x-accepts: application/json
+      x-tags:
+      - tag: Attributes
+      x-code-samples:
+      - lang: cURL
+        label: CLI
+        source: |-
+          curl -X GET \
+          -H "X-API-KEY: [[apiKey]]" \
+           -H "Accept: application/json" \
+           "http://localhost:8030/api/endpoints/attributes"
+      - lang: Java
+        label: Java
+        source: |-
+          import org.openapitools.client.*;
+          import org.openapitools.client.auth.*;
+          import org.openapitools.client.model.*;
+          import org.openapitools.client.api.AttributesApi;
+
+          import java.io.File;
+          import java.util.*;
+
+          public class AttributesApiExample {
+              public static void main(String[] args) {
+                  ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+                  // Configure API key authorization: ApiKeyAuth
+                  ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+                  ApiKeyAuth.setApiKey("YOUR API KEY");
+
+                  // Create an instance of the API class
+                  AttributesApi apiInstance = new AttributesApi();
+
+                  try {
+                      array[Attribute] result = apiInstance.getAttributes();
+                      System.out.println(result);
+                  } catch (ApiException e) {
+                      System.err.println("Exception when calling AttributesApi#getAttributes");
+                      e.printStackTrace();
+                  }
+              }
+      - lang: JavaScript
+        label: JavaScript
+        source: |-
+          var AlwaysOnMobileHulloApi = require('always_on_mobile_hullo_api');
+          var defaultClient = AlwaysOnMobileHulloApi.ApiClient.instance;
+
+          // Configure API key authorization: ApiKeyAuth
+          var ApiKeyAuth = defaultClient.authentications['ApiKeyAuth'];
+          ApiKeyAuth.apiKey = "YOUR API KEY";
+
+          // Create an instance of the API class
+          var api = new AlwaysOnMobileHulloApi.AttributesApi()
+          var callback = function(error, data, response) {
+            if (error) {
+              console.error(error);
+            } else {
+              console.log('API called successfully. Returned data: ' + data);
+            }
+          };
+          api.getAttributes(callback);
+    summary: Operations for administering attributes
+components:
+  requestBodies:
+    MessageBody:
+      content:
+        application/json:
+          example:
+            phoneNumber: "447700912345"
+            messageText: "Hi, don't forget your appointment on Thursday at 11:00"
+          schema:
+            $ref: '#/components/schemas/Message'
+      description: A JSON object containing message information
+      required: true
+    MemberBody:
+      content:
+        application/json:
+          example:
+            phoneNumber: "447700912345"
+            fullName: Brian Smith
+            attributes:
+              Location:
+              - London
+              Clinic Attended:
+              - Chelsea
+          schema:
+            $ref: '#/components/schemas/Member'
+      description: A JSON object containing member information
+      required: true
+  schemas:
+    Messages:
+      description: A list of messages
+      items:
+        $ref: '#/components/schemas/Message'
+      type: array
+    Message:
+      description: A record containing information about a message
+      example:
+        messageText: messageText
+        phoneNumber: phoneNumber
+        inbound: true
+        fullName: fullName
+        id: id
+        issueDate: 2000-01-23T04:56:07.000+00:00
+        deliveryStatus: null
+      properties:
+        id:
+          description: The unique ID for the message once submitted
+          type: string
+        issueDate:
+          description: The date the message was will be / was issued. When sending
+            a message this date should be at least 2 minutes in the future
+          format: date-time
+          type: string
+        phoneNumber:
+          description: The phone number the message was sent to / received from
+          format: phone-number
+          maxLength: 15
+          minLength: 1
+          type: string
+        messageText:
+          description: The message text to send / was sent to the member
+          maxLength: 640
+          minLength: 1
+          type: string
+        fullName:
+          description: The full name of the member the message was sent to (read only)
+          type: string
+        inbound:
+          description: If the message was received from a members phone then this
+            will be marked as true (read only)
+          type: boolean
+        deliveryStatus:
+          $ref: '#/components/schemas/MessageStatus'
+      required:
+      - messageText
+      - phoneNumber
+      type: object
+    MessageStatus:
+      description: The status of the message (read only).
+      enum:
+      - FAILED
+      - ACCEPTED
+      - DELIVERED
+      - ISSUED
+      - REJECTED
+      - UNKNOWN
+      - PENDING
+      - STAGING
+      - N/A
+      type: string
+    Member:
+      description: A record containing information about a member
+      example:
+        phoneNumber: phoneNumber
+        registrationDate: 2000-01-23T04:56:07.000+00:00
+        fullName: fullName
+        groups:
+        - groups
+        - groups
+        attributes:
+          key:
+          - attributes
+          - attributes
+      properties:
+        registrationDate:
+          description: The date the member was registered
+          format: date-time
+          type: string
+        phoneNumber:
+          description: The phone number of the member
+          format: phone-number
+          maxLength: 15
+          minLength: 1
+          type: string
+        fullName:
+          description: The full name of the member as "<forename> <surname>"
+          maxLength: 250
+          minLength: 1
+          type: string
+        attributes:
+          additionalProperties:
+            items:
+              type: string
+            type: array
+          description: The attributes that describe the member
+          type: object
+        groups:
+          description: The list of groups this member belongs to
+          items:
+            type: string
+          type: array
+      required:
+      - attributes
+      - phoneNumber
+      type: object
+    Attributes:
+      description: A list of attributes
+      items:
+        $ref: '#/components/schemas/Attribute'
+      type: array
+    Attribute:
+      description: An attribute definition
+      example:
+        listItems:
+        - listItems
+        - listItems
+        name: Location
+        displayOrder: 0
+        editType: null
+        type: null
+      properties:
+        name:
+          description: The name of the attribute
+          example: Location
+          type: string
+        type:
+          $ref: '#/components/schemas/AttributeType'
+        displayOrder:
+          minimum: 0
+          type: integer
+        editType:
+          $ref: '#/components/schemas/AttributeEditType'
+        listItems:
+          items:
+            type: string
+          type: array
+      required:
+      - name
+      - type
+      type: object
+    AttributeType:
+      description: The type of attribute
+      enum:
+      - LIST
+      - TEXT
+      - FULLNAME
+      - NUMBER
+      - DATE
+      - BIRTHDAY
+      - APPOINTMENTDATE
+      - APPOINTMENTTIME
+      type: string
+    AttributeEditType:
+      description: The type of edit that can be made to an attribute
+      enum:
+      - HIDDEN
+      - READ_ONLY
+      - EDITABLE_OPTIONAL
+      - EDITABLE_MANDATORY
+      type: string
+    Account:
+      description: The account being used to access the API
+      example:
+        name: Messaging Access
+      properties:
+        name:
+          description: The name of the account
+          example: Messaging Access
+          type: string
+      type: object
+    GenericError:
+      description: |
+        **Provides information about the error that occurred when calling an operation. The code can be one of the following:**
+        | Status           | Code        | Reason                                                                                                                                                     |
+        | ---------------- | ------------| -----------------------------------------------------------------------------------------------------------------------------------------------------------|
+        | 500              | SE001       | HTTP 500 Internal Server Error                                                                                                                             |
+        | 500              | SE002       | HTTP 500 Internal Server Error - Configuration Error                                                                                                       |
+        | 500              | SE003       | HTTP 500 Internal Server Error - External System Error                                                                                                     |
+        | 400              | BR001       | JSON request invalid, it must contain %s in a valid JSON format                                                                                            |
+        | 400              | BR002       | The '%s' parameter must be provided                                                                                                                        |
+        | 400              | BR003       | The request body was not valid                                                                                                                             |
+        | 400              | BR004       | The '%s' parameter must be in the ISO-8601 extended offset date-time format                                                                                |
+        | 400              | BR012       | The account does not have enough credit to send the requested message. Estimated credit required: %s Credit available: %s                                  |
+        | 400              | BR013       | The '%s' parameter must be at least %s seconds or more in the future                                                                                       |
+        | 400              | BR016       | The '%s' parameter must be between %s and %s characters                                                                                                    |
+        | 400              | BR025       | The '%s' parameter must contain a valid value                                                                                                              |
+        | 400              | BR027       | Member not opted in                                                                                                                                        |
+        | 400              | BR039       | Member opted out                                                                                                                                           |
+        | 400              | BR044       | At least one of the specified parameters '%s' must be provided                                                                                             |
+        | 400              | BR049       | %s is a mandatory attribute and must be provided                                                                                                           |
+        | 401              | UA001       | Access denied: check API key                                                                                                                               |
+        | 401              | UA002       | Access denied: '%s'                                                                                                                                        |
+        | 401              | UA005       | Account disabled                                                                                                                                           |
+        | 403              | FB001       | Access denied                                                                                                                                              |
+        | 404              | NF001       | %s not found                                                                                                                                               |
+        | 429              | TR001       | Too Many Requests                                                                                                                                          |
+      properties:
+        code:
+          type: string
+        text:
+          type: string
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      description: "In order to use the hullo API you will need to create an API key\
+        \ using the hullo console. You will find\nthis in the integration section\
+        \ of the account area where you can create multiple API keys with the required\n\
+        permissions for your use case.  \n\n**NOTE:** *Your API keys should remain\
+        \ secret as they can be used to execute functions on your hullo account. We\
+        \ \nadvise that you don't place these keys directly in any source code and\
+        \ especially not in any javascript code \nthat will run directly in a users\
+        \ browser.*\n"
+      in: header
+      name: X-API-KEY
+      type: apiKey
+
